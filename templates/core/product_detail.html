@@ -1,0 +1,153 @@
+{% extends "core/base.html" %}
+{% load static %}
+{% load core_extras %}
+
+{% block title %}{{ product.name }}{% endblock %}
+
+{% block page_title %}Ürün Detayı{% endblock %}
+
+{% block content %}
+<div class="container mx-auto p-6">
+    <div class="bg-white shadow-md rounded-lg overflow-hidden">
+        <div class="p-6 border-b">
+            <div class="flex justify-between items-center">
+                <h2 class="text-2xl font-bold">{{ product.name }} <span class="text-gray-500 text-lg">({{ product.code }})</span></h2>
+                <div class="flex space-x-2">
+                    <a href="{% url 'product_list' %}" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md">
+                        <i class="fas fa-arrow-left mr-1"></i> Geri
+                    </a>
+                    <a href="{% url 'product_edit' product.id %}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md">
+                        <i class="fas fa-edit mr-1"></i> Düzenle
+                    </a>
+                    <a href="{% url 'product_delete' product.id %}" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md">
+                        <i class="fas fa-trash mr-1"></i> Sil
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="p-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Ürün Bilgileri</h3>
+                    <table class="w-full">
+                        <tbody>
+                            <tr class="border-b">
+                                <td class="py-2 font-medium">Kategori:</td>
+                                <td class="py-2">{{ product.category.name }}</td>
+                            </tr>
+                            <tr class="border-b">
+                                <td class="py-2 font-medium">Birim:</td>
+                                <td class="py-2">{{ product.unit.name }} ({{ product.unit.symbol }})</td>
+                            </tr>
+                            <tr class="border-b">
+                                <td class="py-2 font-medium">Tedarikçi:</td>
+                                <td class="py-2">{{ product.supplier.name }}</td>
+                            </tr>
+                            <tr class="border-b">
+                                <td class="py-2 font-medium">Depo:</td>
+                                <td class="py-2">{{ product.warehouse.name|default:"Belirtilmemiş" }}</td>
+                            </tr>
+                            <tr class="border-b">
+                                <td class="py-2 font-medium">Oluşturulma Tarihi:</td>
+                                <td class="py-2">{{ product.created_at|date:"d.m.Y H:i" }}</td>
+                            </tr>
+                            <tr>
+                                <td class="py-2 font-medium">Son Güncelleme:</td>
+                                <td class="py-2">{{ product.updated_at|date:"d.m.Y H:i" }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Stok ve Fiyat Bilgileri</h3>
+                    <table class="w-full">
+                        <tbody>
+                            <tr class="border-b">
+                                <td class="py-2 font-medium">Mevcut Stok:</td>
+                                <td class="py-2 {% if product.current_stock <= product.min_stock %}text-red-600 font-bold{% endif %}">
+                                    {{ product.current_stock }} {{ product.unit.symbol }}
+                                    {% if product.current_stock <= product.min_stock %}
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 ml-2">
+                                        Kritik Seviye
+                                    </span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            <tr class="border-b">
+                                <td class="py-2 font-medium">Minimum Stok:</td>
+                                <td class="py-2">{{ product.min_stock }} {{ product.unit.symbol }}</td>
+                            </tr>
+                            <tr class="border-b">
+                                <td class="py-2 font-medium">Alış Fiyatı:</td>
+                                <td class="py-2">{{ product.purchase_price }} ₺</td>
+                            </tr>
+                            <tr class="border-b">
+                                <td class="py-2 font-medium">Satış Fiyatı:</td>
+                                <td class="py-2">{{ product.sale_price }} ₺</td>
+                            </tr>
+                            <tr>
+                                <td class="py-2 font-medium">Toplam Stok Değeri:</td>
+                                <td class="py-2 font-semibold">{{ product.current_stock|floatformat:2 }} × {{ product.purchase_price|floatformat:2 }} = {{ total_value|floatformat:2 }} ₺</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            {% if product.description %}
+            <div class="mt-6">
+                <h3 class="text-lg font-semibold mb-2">Açıklama</h3>
+                <div class="bg-gray-50 p-4 rounded-md">
+                    <p>{{ product.description|linebreaks }}</p>
+                </div>
+            </div>
+            {% endif %}
+            
+            <div class="mt-6">
+                <h3 class="text-lg font-semibold mb-4">Son Stok Hareketleri</h3>
+                {% if movements %}
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tarih</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Hareket Tipi</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Depo</th>
+                                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Miktar</th>
+                                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Birim Fiyat</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Referans No</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            {% for movement in movements %}
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ movement.created_at|date:"d.m.Y H:i" }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                    <span class="px-2 py-1 rounded-full text-xs font-semibold 
+                                    {% if movement.movement_type == 'in' %}bg-green-200 text-green-800
+                                    {% elif movement.movement_type == 'out' %}bg-red-200 text-red-800
+                                    {% else %}bg-blue-200 text-blue-800{% endif %}">
+                                        {{ movement.get_movement_type_display }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ movement.warehouse.name }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-right">{{ movement.quantity }} {{ product.unit.symbol }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-right">{{ movement.unit_price }} ₺</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ movement.reference_no }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="bg-gray-50 p-4 rounded-md text-gray-500">
+                    Bu ürün için henüz stok hareketi bulunmuyor.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

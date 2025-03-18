@@ -1,0 +1,65 @@
+{% extends "core/base.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}{{ title }} - Depo Yönetim Sistemi{% endblock %}
+
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto">
+    <div class="bg-white shadow rounded-lg p-6">
+        <form method="post" class="space-y-6">
+            {% csrf_token %}
+            
+            <div class="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-2">
+                <div class="sm:col-span-1">
+                    {{ form.name|as_crispy_field }}
+                </div>
+
+                <div class="sm:col-span-1">
+                    {{ form.code|as_crispy_field }}
+                </div>
+
+                <div class="sm:col-span-1">
+                    {{ form.contact_person|as_crispy_field }}
+                </div>
+
+                <div class="sm:col-span-1">
+                    {{ form.phone|as_crispy_field }}
+                </div>
+
+                <div class="sm:col-span-1">
+                    {{ form.email|as_crispy_field }}
+                </div>
+
+                <div class="sm:col-span-1">
+                    {{ form.tax_number|as_crispy_field }}
+                </div>
+
+                <div class="sm:col-span-1">
+                    {{ form.tax_office|as_crispy_field }}
+                </div>
+
+                <div class="sm:col-span-2">
+                    {{ form.address|as_crispy_field }}
+                </div>
+
+                <div class="sm:col-span-2">
+                    {{ form.description|as_crispy_field }}
+                </div>
+            </div>
+
+            <div class="flex justify-end space-x-3">
+                <a href="{% url 'supplier_list' %}" 
+                   class="bg-gray-100 text-gray-800 px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-200">
+                    İptal
+                </a>
+                <button type="submit"
+                        class="bg-indigo-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-indigo-700">
+                    Kaydet
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %} 

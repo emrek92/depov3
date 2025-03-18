@@ -1,0 +1,41 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Kullanıcı Rolleri{% endblock %}
+
+{% block page_title %}{{ user_obj.username }} İçin Roller{% endblock %}
+
+{% block content %}
+<div class="container mx-auto p-6">
+    <div class="bg-white shadow-md rounded-lg p-6">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-xl font-semibold">{{ user_obj.get_full_name|default:user_obj.username }} İçin Roller</h2>
+            <a href="{% url 'user_list' %}" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md">
+                <i class="fas fa-arrow-left mr-2"></i> Kullanıcılara Dön
+            </a>
+        </div>
+
+        <form method="post">
+            {% csrf_token %}
+            <div class="mb-6">
+                <p class="text-gray-600 mb-2">Bu kullanıcıya atamak istediğiniz rolleri seçin:</p>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {% for role in roles %}
+                    <div class="flex items-center space-x-2">
+                        <input type="checkbox" name="roles" id="role_{{ role.id }}" value="{{ role.id }}"
+                            class="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
+                            {% if role.id in user_role_ids %}checked{% endif %}>
+                        <label for="role_{{ role.id }}" class="text-gray-700">{{ role.name }}</label>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="flex justify-end">
+                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-md">
+                    <i class="fas fa-save mr-2"></i> Değişiklikleri Kaydet
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %} 

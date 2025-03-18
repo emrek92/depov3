@@ -1,0 +1,58 @@
+{% extends 'core/base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block title %}Stok Hareketleri Raporu{% endblock %}
+
+{% block page_title %}Stok Hareketleri Raporu{% endblock %}
+
+{% block content %}
+<div class="container mx-auto p-6">
+    <div class="bg-white shadow-md rounded-lg p-6">
+        <h2 class="text-xl font-semibold mb-6">Stok Hareketleri Raporu</h2>
+        
+        <form method="post" action="{% url 'movement_report' %}" id="reportForm">
+            {% csrf_token %}
+            <input type="hidden" name="export_format" id="export_format" value="">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    {{ form.start_date|as_crispy_field }}
+                </div>
+                <div>
+                    {{ form.end_date|as_crispy_field }}
+                </div>
+                <div>
+                    {{ form.movement_type|as_crispy_field }}
+                </div>
+                <div>
+                    {{ form.warehouse|as_crispy_field }}
+                </div>
+                <div>
+                    {{ form.category|as_crispy_field }}
+                </div>
+            </div>
+            <div class="mt-6 flex flex-wrap gap-3">
+                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-md">
+                    <i class="fas fa-search mr-2"></i>Raporu Oluştur
+                </button>
+                <button type="button" class="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-md" onclick="exportReport('excel')">
+                    <i class="fas fa-file-excel mr-2"></i>Excel İndir
+                </button>
+                <button type="button" class="bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-md" onclick="exportReport('pdf')">
+                    <i class="fas fa-file-pdf mr-2"></i>PDF İndir
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+    function exportReport(format) {
+        document.getElementById('export_format').value = format;
+        document.getElementById('reportForm').submit();
+    }
+</script>
+{% endblock %}
+
+{% endblock %} 

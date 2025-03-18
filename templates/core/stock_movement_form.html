@@ -1,0 +1,59 @@
+{% extends 'core/base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block title %}Yeni Stok Hareketi{% endblock %}
+
+{% block page_title %}Yeni Stok Hareketi{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-6">
+    <div class="max-w-3xl mx-auto">
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <form method="post" class="space-y-6">
+                {% csrf_token %}
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        {{ form.product|as_crispy_field }}
+                    </div>
+                    <div>
+                        {{ form.warehouse|as_crispy_field }}
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        {{ form.movement_type|as_crispy_field }}
+                    </div>
+                    <div>
+                        {{ form.quantity|as_crispy_field }}
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        {{ form.unit_price|as_crispy_field }}
+                    </div>
+                    <div>
+                        {{ form.reference_no|as_crispy_field }}
+                    </div>
+                </div>
+
+                <div>
+                    {{ form.notes|as_crispy_field }}
+                </div>
+
+                <div class="flex justify-end space-x-4">
+                    <a href="{% url 'stock_movement_list' %}" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded">
+                        İptal
+                    </a>
+                    <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">
+                        Kaydet
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %} 

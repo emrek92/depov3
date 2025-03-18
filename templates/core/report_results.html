@@ -1,0 +1,125 @@
+{% extends 'core/base.html' %}
+{% load static %}
+{% load core_extras %}
+
+{% block title %}{{ report_title }}{% endblock %}
+
+{% block page_title %}{{ report_title }}{% endblock %}
+
+{% block content %}
+<div class="container mx-auto p-6">
+    <div class="bg-white shadow-md rounded-lg p-6">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-xl font-semibold">{{ report_title }}</h2>
+            <div class="flex space-x-2">
+                <a href="javascript:history.back()" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md">
+                    <i class="fas fa-arrow-left mr-2"></i> Geri
+                </a>
+                <button onclick="window.print()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md">
+                    <i class="fas fa-print mr-2"></i> Yazdır
+                </button>
+                <form method="post" action="{% url 'movement_report' %}" id="exportForm" class="inline">
+                    {% csrf_token %}
+                    <input type="hidden" name="export_format" id="export_format" value="">
+                    <input type="hidden" name="start_date" value="{{ request.GET.start_date|default:request.POST.start_date }}">
+                    <input type="hidden" name="end_date" value="{{ request.GET.end_date|default:request.POST.end_date }}">
+                    <input type="hidden" name="movement_type" value="{{ request.GET.movement_type|default:request.POST.movement_type }}">
+                    <input type="hidden" name="warehouse" value="{{ request.GET.warehouse|default:request.POST.warehouse }}">
+                    <input type="hidden" name="category" value="{{ request.GET.category|default:request.POST.category }}">
+                    <button type="button" onclick="exportAs('excel')" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md">
+                        <i class="fas fa-file-excel mr-2"></i> Excel
+                    </button>
+                    <button type="button" onclick="exportAs('pdf')" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md ml-2">
+                        <i class="fas fa-file-pdf mr-2"></i> PDF
+                    </button>
+                </form>
+            </div>
+        </div>
+        
+        {% if filters %}
+        <div class="bg-gray-100 p-4 rounded-lg mb-6">
+            <h3 class="text-lg font-semibold mb-2">Filtreler</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {% for filter in filters %}
+                <div class="flex items-center">
+                    <span class="text-gray-700">{{ filter }}</span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+        
+        {% if movements %}
+        <div class="overflow-x-auto">
+            <table class="min-w-full bg-white">
+                <thead>
+                    <tr class="bg-gray-200 text-gray-700">
+                        <th class="py-2 px-4 border-b text-left">Tarih</th>
+                        <th class="py-2 px-4 border-b text-left">Ürün</th>
+                        <th class="py-2 px-4 border-b text-left">Depo</th>
+                        <th class="py-2 px-4 border-b text-left">Hareket Tipi</th>
+                        <th class="py-2 px-4 border-b text-right">Miktar</th>
+                        <th class="py-2 px-4 border-b text-right">Birim Fiyat</th>
+                        <th class="py-2 px-4 border-b text-right">Toplam Değer</th>
+                        <th class="py-2 px-4 border-b text-left">Referans No</th>
+                        <th class="py-2 px-4 border-b text-left">İşlem Yapan</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for movement in movements %}
+                    <tr class="hover:bg-gray-100">
+                        <td class="py-2 px-4 border-b">{{ movement.created_at|date:"d.m.Y H:i" }}</td>
+                        <td class="py-2 px-4 border-b">{{ movement.product.name }} ({{ movement.product.code }})</td>
+                        <td class="py-2 px-4 border-b">{{ movement.warehouse.name }}</td>
+                        <td class="py-2 px-4 border-b">
+                            <span class="px-2 py-1 rounded-full text-xs font-semibold 
+                            {% if movement.movement_type == 'in' %}bg-green-200 text-green-800
+                            {% elif movement.movement_type == 'out' %}bg-red-200 text-red-800
+                            {% else %}bg-blue-200 text-blue-800{% endif %}">
+                                {{ movement.get_movement_type_display }}
+                            </span>
+                        </td>
+                        <td class="py-2 px-4 border-b text-right">{{ movement.quantity }} {{ movement.product.unit.symbol }}</td>
+                        <td class="py-2 px-4 border-b text-right">{{ movement.unit_price }} ₺</td>
+                        <td class="py-2 px-4 border-b text-right">{{ movement.quantity|floatformat:2|default:0 }} × {{ movement.unit_price|floatformat:2|default:0 }} = {{ movement.quantity|mul:movement.unit_price|floatformat:2|default:0 }} ₺</td>
+                        <td class="py-2 px-4 border-b">{{ movement.reference_no }}</td>
+                        <td class="py-2 px-4 border-b">{{ movement.created_by.get_full_name|default:movement.created_by.username }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot>
+                    <tr class="bg-gray-200 font-semibold">
+                        <td class="py-2 px-4 border-t" colspan="6" class="text-right">Toplam Giriş Değeri:</td>
+                        <td class="py-2 px-4 border-t text-right">{{ total_in|floatformat:2 }} ₺</td>
+                        <td class="py-2 px-4 border-t" colspan="2"></td>
+                    </tr>
+                    <tr class="bg-gray-200 font-semibold">
+                        <td class="py-2 px-4" colspan="6" class="text-right">Toplam Çıkış Değeri:</td>
+                        <td class="py-2 px-4 text-right">{{ total_out|floatformat:2 }} ₺</td>
+                        <td class="py-2 px-4" colspan="2"></td>
+                    </tr>
+                    <tr class="bg-gray-200 font-semibold">
+                        <td class="py-2 px-4" colspan="6" class="text-right">Net Değer:</td>
+                        <td class="py-2 px-4 text-right">{{ net_value|floatformat:2 }} ₺</td>
+                        <td class="py-2 px-4" colspan="2"></td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+        {% else %}
+        <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-4">
+            <p>Bu kriterlere uygun stok hareketi bulunamadı.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function exportAs(format) {
+        document.getElementById('export_format').value = format;
+        document.getElementById('exportForm').submit();
+    }
+</script>
+{% endblock %} 

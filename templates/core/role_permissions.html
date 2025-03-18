@@ -1,0 +1,42 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Rol İzinleri{% endblock %}
+
+{% block page_title %}Rol İzinleri{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-6">
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-xl font-semibold text-gray-800">{{ role.name }} - İzinler</h2>
+            <a href="{% url 'role_list' %}" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded">
+                Geri Dön
+            </a>
+        </div>
+
+        <form method="post" class="space-y-4">
+            {% csrf_token %}
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {% for permission in permissions %}
+                <div class="flex items-center space-x-3 p-3 border rounded-lg">
+                    <input type="checkbox" name="permissions" value="{{ permission.id }}" 
+                           id="permission_{{ permission.id }}"
+                           {% if permission in role.permissions.all %}checked{% endif %}
+                           class="form-checkbox h-5 w-5 text-blue-600">
+                    <label for="permission_{{ permission.id }}" class="text-sm text-gray-700">
+                        {{ permission.name }}
+                    </label>
+                </div>
+                {% endfor %}
+            </div>
+
+            <div class="flex justify-end mt-6">
+                <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">
+                    İzinleri Kaydet
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %} 

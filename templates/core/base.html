@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Depo Yönetim Sistemi{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Genel Stil */
+        :root {
+            --primary-color: #3b82f6;
+            --primary-dark: #2563eb;
+            --secondary-color: #64748b;
+            --sidebar-bg: #1e293b;
+            --sidebar-hover: #334155;
+            --sidebar-active: #475569;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+        }
+        
+        /* Scrollbar Stili */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+        
+        /* Animasyonlar */
+        .sidebar-link, .collapse-btn {
+            transition: all 0.2s ease;
+        }
+        
+        .sidebar-link:hover, .collapse-btn:hover {
+            background-color: var(--sidebar-hover);
+            transform: translateX(4px);
+        }
+        
+        .menu-group-icon {
+            transition: transform 0.3s ease;
+        }
+        
+        .rotate-icon {
+            transform: rotate(180deg);
+        }
+        
+        /* Aktif menü öğesi gösterim efekti */
+        .sidebar-link.active {
+            background-color: var(--sidebar-active);
+            border-left: 3px solid var(--primary-color);
+        }
+        
+        /* Mobil kaydırma için sidebar */
+        @media (max-width: 768px) {
+            .mobile-sidebar-open {
+                transform: translateX(0) !important;
+            }
+        }
+        
+        /* Alertler için stil */
+        .alert {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="bg-gray-100">
+    {% if user.is_authenticated %}
+    <div class="min-h-screen flex">
+        <!-- Sidebar -->
+        <div id="sidebar" class="bg-slate-800 text-white w-64 flex-shrink-0 overflow-y-auto fixed h-full z-20 transition-transform duration-300 ease-in-out transform md:translate-x-0 -translate-x-full">
+            <div class="flex flex-col h-full">
+                <!-- Logo ve Header -->
+                <div class="px-6 py-5 border-b border-slate-700 flex items-center space-x-3">
+                    <div class="bg-blue-500 text-white p-2 rounded-md">
+                        <i class="fas fa-boxes text-xl"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-bold text-white">Depo Sistemi</h1>
+                        <p class="text-xs text-slate-400">Stok Yönetim Uygulaması</p>
+                    </div>
+                </div>
+
+                <!-- Kullanıcı Bilgisi -->
+                <div class="px-6 py-3 border-b border-slate-700 flex items-center">
+                    <div class="bg-slate-700 text-blue-300 p-2 rounded-full">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="ml-3">
+                        <p class="text-sm font-medium text-white">{{ user.get_full_name|default:user.username }}</p>
+                        <p class="text-xs text-slate-400">{{ user.email|default:"Kullanıcı" }}</p>
+                    </div>
+                </div>
+
+                <!-- Ana Menü -->
+                <nav class="mt-4 px-4 flex-1 overflow-y-auto">
+                    <!-- Dashboard -->
+                    <a href="{% url 'dashboard' %}" class="sidebar-link flex items-center px-4 py-3 mb-1 rounded-lg text-sm font-medium hover:bg-slate-700 {% if request.resolver_match.url_name == 'dashboard' %}active bg-slate-700{% endif %}">
+                        <i class="fas fa-chart-line text-blue-400 mr-3 w-5 text-center"></i>
+                        <span>Dashboard</span>
+                    </a>
+
+                    <!-- Ürün Yönetimi Grubu -->
+                    <div class="mb-2">
+                        <button type="button" class="collapse-btn flex items-center justify-between w-full px-4 py-3 rounded-lg text-sm font-medium hover:bg-slate-700" data-target="urun-yonetimi">
+                            <div class="flex items-center">
+                                <i class="fas fa-box text-green-400 mr-3 w-5 text-center"></i>
+                                <span>Ürün Yönetimi</span>
+                            </div>
+                            <i class="fas fa-chevron-down menu-group-icon text-xs text-slate-400 transition-transform"></i>
+                        </button>
+                        <div id="urun-yonetimi" class="pl-4 mt-1 space-y-1 {% if request.resolver_match.url_name in 'product_list,product_create,product_edit,product_detail,product_delete,category_list,category_create,category_edit,category_delete,unit_list,unit_create,unit_edit,unit_delete' %}block{% else %}hidden{% endif %}">
+                            <a href="{% url 'product_list' %}" class="sidebar-link flex items-center px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-700 {% if request.resolver_match.url_name == 'product_list' %}active bg-slate-700{% endif %}">
+                                <i class="fas fa-boxes text-slate-400 mr-3 w-5 text-center"></i>
+                                <span>Ürünler</span>
+                            </a>
+                            <a href="{% url 'category_list' %}" class="sidebar-link flex items-center px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-700 {% if request.resolver_match.url_name == 'category_list' %}active bg-slate-700{% endif %}">
+                                <i class="fas fa-tags text-slate-400 mr-3 w-5 text-center"></i>
+                                <span>Kategoriler</span>
+                            </a>
+                            <a href="{% url 'unit_list' %}" class="sidebar-link flex items-center px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-700 {% if request.resolver_match.url_name == 'unit_list' %}active bg-slate-700{% endif %}">
+                                <i class="fas fa-ruler text-slate-400 mr-3 w-5 text-center"></i>
+                                <span>Birimler</span>
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Tedarikçi Yönetimi -->
+                    <a href="{% url 'supplier_list' %}" class="sidebar-link flex items-center px-4 py-3 mb-1 rounded-lg text-sm font-medium hover:bg-slate-700 {% if request.resolver_match.url_name == 'supplier_list' %}active bg-slate-700{% endif %}">
+                        <i class="fas fa-truck-loading text-yellow-400 mr-3 w-5 text-center"></i>
+                        <span>Tedarikçiler</span>
+                    </a>
+
+                    <!-- Depo Yönetimi -->
+                    <a href="{% url 'warehouse_list' %}" class="sidebar-link flex items-center px-4 py-3 mb-1 rounded-lg text-sm font-medium hover:bg-slate-700 {% if request.resolver_match.url_name == 'warehouse_list' %}active bg-slate-700{% endif %}">
+                        <i class="fas fa-warehouse text-pink-400 mr-3 w-5 text-center"></i>
+                        <span>Depolar</span>
+                    </a>
+
+                    <!-- Stok İşlemleri Grubu -->
+                    <div class="mb-2">
+                        <button type="button" class="collapse-btn flex items-center justify-between w-full px-4 py-3 rounded-lg text-sm font-medium hover:bg-slate-700" data-target="stok-islemleri">
+                            <div class="flex items-center">
+                                <i class="fas fa-dolly-flatbed text-purple-400 mr-3 w-5 text-center"></i>
+                                <span>Stok İşlemleri</span>
+                            </div>
+                            <i class="fas fa-chevron-down menu-group-icon text-xs text-slate-400 transition-transform"></i>
+                        </button>
+                        <div id="stok-islemleri" class="pl-4 mt-1 space-y-1 {% if request.resolver_match.url_name in 'stock_movement_list,stock_in_create,stock_out_create,stock_transfer_create' %}block{% else %}hidden{% endif %}">
+                            <a href="{% url 'stock_movement_list' %}" class="sidebar-link flex items-center px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-700 {% if request.resolver_match.url_name == 'stock_movement_list' %}active bg-slate-700{% endif %}">
+                                <i class="fas fa-exchange-alt text-slate-400 mr-3 w-5 text-center"></i>
+                                <span>Stok Hareketleri</span>
+                            </a>
+                            <a href="{% url 'stock_in_create' %}" class="sidebar-link flex items-center px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-700 {% if request.resolver_match.url_name == 'stock_in_create' %}active bg-slate-700{% endif %}">
+                                <i class="fas fa-arrow-down text-green-500 mr-3 w-5 text-center"></i>
+                                <span>Stok Girişi</span>
+                            </a>
+                            <a href="{% url 'stock_out_create' %}" class="sidebar-link flex items-center px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-700 {% if request.resolver_match.url_name == 'stock_out_create' %}active bg-slate-700{% endif %}">
+                                <i class="fas fa-arrow-up text-red-500 mr-3 w-5 text-center"></i>
+                                <span>Stok Çıkışı</span>
+                            </a>
+                            <a href="{% url 'stock_transfer_create' %}" class="sidebar-link flex items-center px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-700 {% if request.resolver_match.url_name == 'stock_transfer_create' %}active bg-slate-700{% endif %}">
+                                <i class="fas fa-random text-blue-500 mr-3 w-5 text-center"></i>
+                                <span>Stok Transferi</span>
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Raporlar Grubu -->
+                    <div class="mb-2">
+                        <button type="button" class="collapse-btn flex items-center justify-between w-full px-4 py-3 rounded-lg text-sm font-medium hover:bg-slate-700" data-target="raporlar">
+                            <div class="flex items-center">
+                                <i class="fas fa-chart-bar text-orange-400 mr-3 w-5 text-center"></i>
+                                <span>Raporlar</span>
+                            </div>
+                            <i class="fas fa-chevron-down menu-group-icon text-xs text-slate-400 transition-transform"></i>
+                        </button>
+                        <div id="raporlar" class="pl-4 mt-1 space-y-1 {% if request.resolver_match.url_name in 'reports,movement_report' %}block{% else %}hidden{% endif %}">
+                            <a href="{% url 'reports' %}" class="sidebar-link flex items-center px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-700 {% if request.resolver_match.url_name == 'reports' %}active bg-slate-700{% endif %}">
+                                <i class="fas fa-file-alt text-slate-400 mr-3 w-5 text-center"></i>
+                                <span>Tüm Raporlar</span>
+                            </a>
+                            <a href="{% url 'movement_report' %}" class="sidebar-link flex items-center px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-700 {% if request.resolver_match.url_name == 'movement_report' %}active bg-slate-700{% endif %}">
+                                <i class="fas fa-exchange-alt text-slate-400 mr-3 w-5 text-center"></i>
+                                <span>Hareket Raporu</span>
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Kullanıcı Yönetimi Grubu -->
+                    <div class="mb-2">
+                        <button type="button" class="collapse-btn flex items-center justify-between w-full px-4 py-3 rounded-lg text-sm font-medium hover:bg-slate-700" data-target="kullanici-yonetimi">
+                            <div class="flex items-center">
+                                <i class="fas fa-users-cog text-cyan-400 mr-3 w-5 text-center"></i>
+                                <span>Kullanıcı Yönetimi</span>
+                            </div>
+                            <i class="fas fa-chevron-down menu-group-icon text-xs text-slate-400 transition-transform"></i>
+                        </button>
+                        <div id="kullanici-yonetimi" class="pl-4 mt-1 space-y-1 {% if request.resolver_match.url_name in 'user_list,user_create,user_edit,user_delete,role_list,role_create,role_edit,role_delete,permission_list' %}block{% else %}hidden{% endif %}">
+                            <a href="{% url 'user_list' %}" class="sidebar-link flex items-center px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-700 {% if request.resolver_match.url_name == 'user_list' %}active bg-slate-700{% endif %}">
+                                <i class="fas fa-users text-slate-400 mr-3 w-5 text-center"></i>
+                                <span>Kullanıcılar</span>
+                            </a>
+                            <a href="{% url 'role_list' %}" class="sidebar-link flex items-center px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-700 {% if request.resolver_match.url_name == 'role_list' %}active bg-slate-700{% endif %}">
+                                <i class="fas fa-user-tag text-slate-400 mr-3 w-5 text-center"></i>
+                                <span>Roller</span>
+                            </a>
+                        </div>
+                    </div>
+                </nav>
+
+                <!-- Alt Menü - Çıkış -->
+                <div class="mt-auto px-6 py-4 border-t border-slate-700">
+                    <a href="{% url 'logout' %}" class="flex items-center text-sm text-red-400 hover:text-red-300">
+                        <i class="fas fa-sign-out-alt mr-2"></i>
+                        <span>Çıkış Yap</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="flex-1 flex flex-col md:ml-64">
+            <!-- Top Navigation -->
+            <header class="bg-white shadow-sm sticky top-0 z-10">
+                <div class="flex items-center justify-between px-4 py-3">
+                    <!-- Mobil Menü Açma Butonu -->
+                    <button id="menu-toggle" class="md:hidden text-gray-600 focus:outline-none">
+                        <i class="fas fa-bars text-xl"></i>
+                    </button>
+                    
+                    <div class="flex-1 mx-4">
+                        <h2 class="text-xl font-bold text-gray-800">{% block page_title %}{% endblock %}</h2>
+                    </div>
+                    
+                    <div class="flex items-center space-x-4">
+                        <!-- Bildirimler -->
+                        <div class="relative">
+                            <button class="text-gray-600 hover:text-gray-800 focus:outline-none">
+                                <i class="fas fa-bell"></i>
+                                <span class="absolute top-0 right-0 h-2 w-2 rounded-full bg-red-500"></span>
+                            </button>
+                        </div>
+                        
+                        <!-- Kullanıcı Menüsü -->
+                        <div class="relative">
+                            <div class="flex items-center text-sm text-gray-700">
+                                <span class="hidden md:inline-block mr-2">{{ user.get_full_name|default:user.username }}</span>
+                                <i class="fas fa-user-circle text-xl"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Page Content -->
+            <main class="flex-1 p-6 overflow-auto">
+                <!-- Bildirimler -->
+                {% if messages %}
+                <div class="mb-4 space-y-2">
+                    {% for message in messages %}
+                    <div class="alert p-4 rounded-md shadow-sm {% if message.tags == 'error' %}bg-red-100 text-red-700 border-l-4 border-red-500{% else %}bg-green-100 text-green-700 border-l-4 border-green-500{% endif %}">
+                        <div class="flex">
+                            <div class="flex-shrink-0">
+                                {% if message.tags == 'error' %}
+                                <i class="fas fa-exclamation-circle text-red-500"></i>
+                                {% else %}
+                                <i class="fas fa-check-circle text-green-500"></i>
+                                {% endif %}
+                            </div>
+                            <div class="ml-3">
+                                <p class="text-sm font-medium">{{ message }}</p>
+                            </div>
+                            <div class="ml-auto">
+                                <button class="dismiss-alert text-gray-400 hover:text-gray-500 focus:outline-none">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                {% block content %}{% endblock %}
+            </main>
+            
+            <!-- Footer -->
+            <footer class="bg-white border-t border-gray-200 py-4 px-6">
+                <div class="flex justify-between items-center">
+                    <div class="text-sm text-gray-500">
+                        © 2025 Depo Yönetim Sistemi
+                    </div>
+                    <div class="text-sm text-gray-500">
+                        Versiyon 1.0
+                    </div>
+                </div>
+            </footer>
+        </div>
+    </div>
+    {% else %}
+        {% block auth_content %}{% endblock %}
+    {% endif %}
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Collapse menü işlemleri
+            const collapseButtons = document.querySelectorAll('.collapse-btn');
+            
+            collapseButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const targetId = this.getAttribute('data-target');
+                    const targetElement = document.getElementById(targetId);
+                    const icon = this.querySelector('.menu-group-icon');
+                    
+                    if (targetElement.classList.contains('hidden')) {
+                        targetElement.classList.remove('hidden');
+                        targetElement.classList.add('block');
+                        icon.classList.add('rotate-icon');
+                    } else {
+                        targetElement.classList.remove('block');
+                        targetElement.classList.add('hidden');
+                        icon.classList.remove('rotate-icon');
+                    }
+                });
+            });
+            
+            // Aktif menü kontrolü
+            document.querySelectorAll('.collapse-btn').forEach(btn => {
+                const target = document.getElementById(btn.dataset.target);
+                if (target && !target.classList.contains('hidden')) {
+                    btn.querySelector('.menu-group-icon').classList.add('rotate-icon');
+                }
+            });
+            
+            // Mobil menü toggle
+            const menuToggle = document.getElementById('menu-toggle');
+            const sidebar = document.getElementById('sidebar');
+            
+            if (menuToggle && sidebar) {
+                menuToggle.addEventListener('click', function() {
+                    sidebar.classList.toggle('mobile-sidebar-open');
+                });
+            }
+            
+            // Bildirimleri kapatma
+            document.querySelectorAll('.dismiss-alert').forEach(button => {
+                button.addEventListener('click', function() {
+                    this.closest('.alert').remove();
+                });
+            });
+            
+            // Otomatik bildirim kapatma
+            setTimeout(() => {
+                document.querySelectorAll('.alert').forEach(alert => {
+                    alert.style.opacity = '0';
+                    setTimeout(() => {
+                        alert.remove();
+                    }, 300);
+                });
+            }, 5000);
+        });
+    </script>
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html> </html> 

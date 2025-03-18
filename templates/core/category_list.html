@@ -1,0 +1,127 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+{% block title %}Kategoriler - Depo Yönetim Sistemi{% endblock %}
+
+{% block page_title %}Kategoriler{% endblock %}
+
+{% block extra_css %}
+<style>
+    .card-zoom {
+        transition: transform 0.3s ease;
+    }
+    .card-zoom:hover {
+        transform: translateY(-5px);
+    }
+    .search-box {
+        position: relative;
+        transition: all 0.3s ease;
+    }
+    .search-box:focus-within {
+        box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
+    }
+    .search-icon {
+        transition: all 0.3s ease;
+    }
+    .search-box:focus-within .search-icon {
+        color: #4F46E5;
+    }
+    .category-action {
+        position: relative;
+        overflow: hidden;
+    }
+    .category-action::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 0;
+        height: 2px;
+        background-color: currentColor;
+        transition: width 0.3s ease;
+    }
+    .category-action:hover::after {
+        width: 100%;
+    }
+    .fade-in {
+        animation: fadeIn 0.5s ease-in-out;
+    }
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mx-auto p-6">
+    <!-- Arama ve Filtreler -->
+    <div class="bg-white shadow-md rounded-lg p-6 mb-6">
+        <form method="get" action="{% url 'category_list' %}" class="flex flex-wrap items-end gap-4">
+            <div class="flex-1 min-w-[200px]">
+                <label for="search" class="block text-sm font-medium text-gray-700 mb-1">Arama</label>
+                <input type="text" id="search" name="search" value="{{ search_query }}" 
+                    class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                    placeholder="Kategori adı veya açıklama...">
+            </div>
+            <div>
+                <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+                    <i class="fas fa-search mr-1"></i> Filtrele
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Kategori Listesi -->
+    <div class="bg-white shadow-md rounded-lg overflow-hidden">
+        <div class="flex justify-between items-center p-6 border-b">
+            <h2 class="text-xl font-semibold">Kategori Listesi</h2>
+            <a href="{% url 'category_create' %}" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700">
+                <i class="fas fa-plus mr-1"></i> Yeni Kategori
+            </a>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kategori Adı</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Açıklama</th>
+                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Ürün Sayısı</th>
+                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">İşlemler</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for category in categories %}
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ category.name }}</td>
+                        <td class="px-6 py-4 text-sm text-gray-500">{{ category.description|truncatewords:20 }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-500">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                {{ category.product_count }} Ürün
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <div class="flex justify-end space-x-2">
+                                <a href="{% url 'category_edit' category.id %}" class="inline-flex items-center px-3 py-1.5 bg-blue-200 hover:bg-blue-300 text-blue-800 rounded-md shadow-sm" title="Düzenle">
+                                    <i class="fas fa-edit"></i>&nbsp;Düzenle
+                                </a>
+                                <a href="{% url 'category_delete' category.id %}" class="inline-flex items-center px-3 py-1.5 bg-red-200 hover:bg-red-300 text-red-800 rounded-md shadow-sm" title="Sil">
+                                    <i class="fas fa-trash"></i>&nbsp;Sil
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="px-6 py-4 text-center text-sm text-gray-500">
+                            Kategori bulunamadı.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %} 

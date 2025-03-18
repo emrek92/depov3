@@ -1,0 +1,39 @@
+{% extends "core/base.html" %}
+
+{% block title %}Tedarikçi Sil - Depo Yönetim Sistemi{% endblock %}
+
+{% block page_title %}Tedarikçi Sil{% endblock %}
+
+{% block content %}
+<div class="max-w-lg mx-auto">
+    <div class="bg-white shadow rounded-lg p-6">
+        <div class="text-center">
+            <svg class="mx-auto h-12 w-12 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+            </svg>
+            
+            <h3 class="mt-4 text-lg font-medium text-gray-900">Tedarikçiyi Silmek İstediğinize Emin misiniz?</h3>
+            
+            <div class="mt-2">
+                <p class="text-sm text-gray-500">
+                    <strong>{{ supplier.name }}</strong> ({{ supplier.code }}) tedarikçisini silmek üzeresiniz. Bu işlem geri alınamaz.
+                </p>
+            </div>
+
+            <div class="mt-6 flex justify-center space-x-3">
+                <a href="{% url 'supplier_list' %}" 
+                   class="bg-gray-100 text-gray-800 px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-200">
+                    İptal
+                </a>
+                <form method="post" class="inline">
+                    {% csrf_token %}
+                    <button type="submit"
+                            class="bg-red-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-red-700">
+                        Sil
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

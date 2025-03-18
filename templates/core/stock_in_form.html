@@ -1,0 +1,58 @@
+{% extends 'core/base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block title %}Stok Giriş İşlemi{% endblock %}
+
+{% block page_title %}Stok Giriş İşlemi{% endblock %}
+
+{% block content %}
+<div class="container mx-auto p-6">
+    <div class="bg-white shadow-md rounded-lg p-6">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-xl font-semibold">Stok Giriş İşlemi</h2>
+            <div>
+                <span class="inline-flex items-center px-3 py-1 bg-green-200 text-green-800 rounded-full font-medium">
+                    <i class="fas fa-arrow-down mr-2"></i> Giriş İşlemi
+                </span>
+            </div>
+        </div>
+        
+        <form method="post">
+            {% csrf_token %}
+            {{ form.movement_type }}
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    {{ form.product|as_crispy_field }}
+                </div>
+                <div>
+                    {{ form.warehouse|as_crispy_field }}
+                </div>
+                <div>
+                    {{ form.quantity|as_crispy_field }}
+                </div>
+                <div>
+                    {{ form.unit_price|as_crispy_field }}
+                </div>
+                <div>
+                    {{ form.reference_no|as_crispy_field }}
+                </div>
+            </div>
+            
+            <div class="mt-4">
+                {{ form.notes|as_crispy_field }}
+            </div>
+            
+            <div class="mt-6 flex justify-end space-x-3">
+                <a href="{% url 'stock_movement_list' %}" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md">
+                    İptal
+                </a>
+                <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md">
+                    Stok Girişi Yap
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %} 
