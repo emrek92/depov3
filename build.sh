@@ -7,4 +7,8 @@ pip install -r requirements.txt
 python manage.py collectstatic --noinput
 
 # Veritabanı migrasyonlarını uygula
-python manage.py migrate 
+python manage.py migrate --noinput
+
+# Vercel için gerekli dosyaları oluştur
+mkdir -p staticfiles
+cp -r static/* staticfiles/ 

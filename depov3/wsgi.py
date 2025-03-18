@@ -15,3 +15,7 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'depov3.settings')
 
 application = get_wsgi_application()
 app = application  # Vercel için gerekli
+
+# Vercel için handler
+def handler(request, **kwargs):
+    return app(request, **kwargs)
