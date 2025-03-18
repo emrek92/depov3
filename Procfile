@@ -1,0 +1,1 @@
+web: gunicorn depov3.wsgi --log-file - 
