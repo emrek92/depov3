@@ -1,5 +1,5 @@
-from depov3.wsgi import app
+from depov3.wsgi import application
 
-# Vercel serverless function handler
+# Vercel'in beklediği fonksiyon
 def handler(request, **kwargs):
-    return app(request, **kwargs) 
+    return application(request, **kwargs) 

@@ -1,14 +1,8 @@
 #!/bin/bash
 
-# Statik dosyaları topla
+echo "BUILD START"
+python -m pip install --upgrade pip
 pip install -r requirements.txt
-python manage.py collectstatic --noinput
 
-# Vercel'in build_files.sh'i build olarak işaretlemesi için bir çıktı klasörü oluşturmamız gerekiyor
-if [ -d staticfiles_build ]; then
-  rm -rf staticfiles_build
-fi
-
-# staticfiles_build klasörü oluştur ve tüm staticfiles içeriğini kopyala
-mkdir -p staticfiles_build
-cp -r staticfiles/* staticfiles_build/ 
+python manage.py collectstatic --noinput --clear
+echo "BUILD END" 

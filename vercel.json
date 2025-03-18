@@ -1,6 +1,12 @@
 {
-  "version": 2,
   "builds": [
+    {
+      "src": "build_files.sh",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "staticfiles"
+      }
+    },
     {
       "src": "depov3/wsgi.py",
       "use": "@vercel/python",
@@ -16,14 +22,8 @@
       "dest": "/static/$1"
     },
     {
-      "src": "/media/(.*)",
-      "dest": "/media/$1"
-    },
-    {
       "src": "/(.*)",
       "dest": "depov3/wsgi.py"
     }
-  ],
-  "buildCommand": "pip install -r requirements.txt && python manage.py collectstatic --noinput",
-  "outputDirectory": "staticfiles"
+  ]
 } 
